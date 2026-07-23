@@ -8,7 +8,10 @@ psycopg[binary]>=3.1
 python-dotenv>=1.0
 
 # --- production server (Render etc.): WebSocket-capable worker for SocketIO ---
+# gunicorn >=26 removed the eventlet worker, so we use gevent + gevent-websocket
+# (loaded via geventwebsocket.gunicorn.workers.GeventWebSocketWorker; see render.yaml).
 gunicorn>=21.2
-eventlet>=0.35
+gevent>=24.2
+gevent-websocket>=0.10
 
 pytest>=8.0

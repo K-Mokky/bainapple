@@ -19,7 +19,7 @@ services:
     region: singapore
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn -k eventlet -w 1 -b 0.0.0.0:$PORT app:app
+    startCommand: gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 0.0.0.0:$PORT app:app
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.9"
