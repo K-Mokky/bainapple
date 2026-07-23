@@ -18,6 +18,10 @@ services:
     runtime: python
     region: singapore
     plan: free
+    # Custom domain. On blueprint sync Render provisions the cert and shows
+    # the DNS record to create at your domain host (see below).
+    domains:
+      - bainapple.mokky.store
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 0.0.0.0:$PORT app:app
     envVars:
