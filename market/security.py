@@ -18,6 +18,45 @@ from flask import (
 from .db import query_one
 
 
+def client_ip() -> str:
+    """Best-effort real client IP behind the Cloudflare -> Render proxies.
+
+    ``request.remote_addr`` on its own is the address of the nearest proxy hop,
+    so it is identical for every visitor and useless as a throttling key (it
+    lets an attacker lock a known account out for everyone). Prefer Cloudflare's
+    ``CF-Connecting-IP`` (the true client, which Cloudflare overwrites and a
+    browser cannot forge), then the left-most ``X-Forwarded-For`` entry, and
+    only then the socket peer.
+    """
+    cf = request.headers.get("CF-Connecting-IP")
+    if cf:
+        return cf.strip()
+    xff = request.headers.get("X-Forwarded-For")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.remote_addr or "unknown"
+
+
+def is_safe_next(target: str) -> bool:
+    """True only for a same-site relative redirect target (open-redirect guard).
+
+    Mirrors how a browser normalises a ``Location`` header before resolving it,
+    so the classic bypasses of a naive ``startswith('/')`` check are rejected:
+    - backslashes act as forward slashes (``/\\evil`` -> ``//evil``),
+    - tab/CR/LF are stripped out entirely (``/<TAB>/evil`` -> ``//evil``),
+    - leading whitespace is ignored.
+    A safe value must then start with a single ``/`` (a relative path) and not
+    ``//`` (which a browser resolves as a protocol-relative absolute URL).
+    """
+    if not target:
+        return False
+    candidate = target.replace("\\", "/")
+    for ch in ("\t", "\r", "\n"):
+        candidate = candidate.replace(ch, "")
+    candidate = candidate.lstrip()
+    return candidate.startswith("/") and not candidate.startswith("//")
+
+
 def load_logged_in_user():
     """Attach the current user row to ``g.user`` for each request."""
     user_id = session.get("user_id")
@@ -88,6 +127,11 @@ def apply_security_headers(response):
     response.headers.setdefault("Referrer-Policy", "no-referrer")
     response.headers.setdefault(
         "Permissions-Policy", "geolocation=(), microphone=(), camera=()"
+    )
+    # HSTS: force HTTPS on subsequent visits (mitigates SSL-strip/downgrade).
+    # Harmless over plain HTTP in local dev — browsers ignore it there.
+    response.headers.setdefault(
+        "Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload"
     )
     return response
 

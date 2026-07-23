@@ -23,7 +23,13 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .db import execute, new_id, query_all, query_one
 from datetime import datetime, timezone
 
-from .security import login_required, login_throttle
+from .security import (
+    client_ip,
+    is_safe_next,
+    login_required,
+    login_throttle,
+    rate_limiter,
+)
 from .validators import (
     ValidationError,
     validate_bio,
@@ -38,16 +44,19 @@ def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def _is_safe_next(target: str) -> bool:
-    """Only allow same-site relative redirects (open-redirect defense)."""
-    return bool(target) and target.startswith("/") and not target.startswith("//")
-
-
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     if g.get("user") is not None:
         return redirect(url_for("main.dashboard"))
     if request.method == "POST":
+        cfg = current_app.config
+        if not current_app.testing and not rate_limiter.hit(
+            f"register:{client_ip()}",
+            cfg["REGISTER_MAX_ATTEMPTS"],
+            cfg["REGISTER_WINDOW_SECONDS"],
+        ):
+            flash("요청이 너무 많습니다. 잠시 후 다시 시도해주세요.")
+            return render_template("register.html")
         try:
             username = validate_username(request.form.get("username"))
             password = validate_password(request.form.get("password"))
@@ -79,7 +88,7 @@ def login():
         username = (request.form.get("username") or "").strip()
         password = request.form.get("password") or ""
         cfg = current_app.config
-        throttle_key = f"{username}|{request.remote_addr}"
+        throttle_key = f"{username}|{client_ip()}"
 
         if login_throttle.is_locked(
             throttle_key, cfg["LOGIN_MAX_ATTEMPTS"], cfg["LOGIN_LOCKOUT_SECONDS"]
@@ -112,7 +121,7 @@ def login():
         session.permanent = True
         flash("로그인 되었습니다.")
         nxt = request.args.get("next")
-        if _is_safe_next(nxt):
+        if is_safe_next(nxt):
             return redirect(nxt)
         return redirect(url_for("main.dashboard"))
     return render_template("login.html")

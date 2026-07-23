@@ -60,6 +60,11 @@ class Config:
     LOGIN_MAX_ATTEMPTS = _env_int("LOGIN_MAX_ATTEMPTS", 5)
     LOGIN_LOCKOUT_SECONDS = _env_int("LOGIN_LOCKOUT_SECONDS", 300)
 
+    # Registration throttling per client IP (limits mass account creation and
+    # username-enumeration probing of the "already exists" response).
+    REGISTER_MAX_ATTEMPTS = _env_int("REGISTER_MAX_ATTEMPTS", 10)
+    REGISTER_WINDOW_SECONDS = _env_int("REGISTER_WINDOW_SECONDS", 300)
+
     # --- Chat throttling -------------------------------------------------
     CHAT_MAX_MESSAGES = _env_int("CHAT_MAX_MESSAGES", 10)
     CHAT_WINDOW_SECONDS = _env_int("CHAT_WINDOW_SECONDS", 10)

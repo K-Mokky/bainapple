@@ -30,15 +30,11 @@ from flask import (
 )
 
 from .db import execute, query_all, query_one
-from .security import admin_required
+from .security import admin_required, is_safe_next
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 _KEY_MAX_BYTES = 4096
-
-
-def _is_safe_next(target: str) -> bool:
-    return bool(target) and target.startswith("/") and not target.startswith("//")
 
 
 # ------------------------------------------------------------- key gate
@@ -66,7 +62,7 @@ def verify_key():
             session["admin_key_ok"] = True
             flash("관리자 키가 확인되었습니다.")
             nxt = request.args.get("next")
-            if _is_safe_next(nxt):
+            if is_safe_next(nxt):
                 return redirect(nxt)
             return redirect(url_for("admin.dashboard"))
         flash("키 파일이 올바르지 않습니다.")

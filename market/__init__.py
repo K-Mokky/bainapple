@@ -9,6 +9,7 @@ import secrets
 import sys
 
 from flask import Flask, g, render_template
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
@@ -41,6 +42,11 @@ def _ensure_admin_key_file(app: Flask) -> None:
 
 def create_app(config_object: type = Config) -> Flask:
     app = Flask(__name__)
+    # Trust exactly one proxy hop (Render's load balancer) so request.scheme /
+    # request.remote_addr reflect the forwarded values instead of the internal
+    # proxy. Client throttling additionally prefers CF-Connecting-IP; see
+    # security.client_ip.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     app.config.from_object(config_object)
 
     if getattr(config_object, "SECRET_KEY_IS_EPHEMERAL", False):
