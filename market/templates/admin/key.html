@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}관리자 키 인증{% endblock %}
+{% block content %}
+<h1>관리자 키 인증</h1>
+<p class="muted">
+  관리자 페이지는 발급된 <strong>키 파일</strong>을 제출해야만 접속할 수 있습니다.
+  서버 최초 기동 시 생성된 키 파일(기본: <code>instance/admin_key.txt</code>)을 업로드하세요.
+</p>
+<form class="stack" method="post" enctype="multipart/form-data"
+      action="{{ url_for('admin.verify_key', next=request.args.get('next')) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="key_file">키 파일</label>
+  <input id="key_file" name="key_file" type="file" required>
+  <button class="btn" type="submit">인증</button>
+</form>
+{% endblock %}

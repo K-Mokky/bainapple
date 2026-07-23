@@ -1,0 +1,37 @@
+# Render Blueprint for the 바인애플 marketplace (Flask + Socket.IO + Supabase).
+#
+# Deploy:
+#   1) Push this folder to a GitHub repo.
+#   2) Render Dashboard -> New -> Blueprint -> pick the repo (Render reads this file).
+#   3) Fill the two secret env vars it asks for (DATABASE_URL, ADMIN_PASSWORD).
+#
+# Notes:
+#   * region "singapore" is the closest Render region to the Supabase project in
+#     Seoul (ap-northeast-2) -> lowest DB latency.
+#   * one worker (-w 1): the app keeps rate-limit/room state in process memory,
+#     so scale vertically (or add a Redis message queue) rather than adding workers.
+#   * the free plan's disk is ephemeral: uploaded product images and the
+#     generated instance/admin_key.txt reset on redeploy/cold-start.
+services:
+  - type: web
+    name: bainapple
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -k eventlet -w 1 -b 0.0.0.0:$PORT app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      # Supabase session-pooler connection string (secret — set in dashboard):
+      #   postgresql://postgres.fkfzxbvolgjbnjqzlerf:PASSWORD@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SESSION_COOKIE_SECURE
+        value: "1"
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false

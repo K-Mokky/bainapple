@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}채팅 목록{% endblock %}
+{% block content %}
+<h1>채팅 목록</h1>
+<div id="chat-list" class="chat-list" data-me="{{ current_user['id'] }}">
+  {% for c in conversations %}
+    <a class="chat-item" href="{{ url_for('chat.direct', user_id=c['peer_id']) }}"
+       data-peer="{{ c['peer_id'] }}">
+      <span class="from">{{ c['username'] }}</span>
+      <span class="preview">{{ c['content'] }}</span>
+      <span class="muted small">{{ c['created_at'] }}</span>
+    </a>
+  {% endfor %}
+</div>
+<p id="chat-empty" class="muted" {% if conversations %}hidden{% endif %}>
+  아직 채팅이 없습니다. 상품 페이지에서 "판매자와 1:1 채팅"으로 대화를 시작하세요.
+</p>
+{% endblock %}
+{% block scripts %}
+{# socket.io.min.js is loaded by base.html for logged-in users #}
+<script src="{{ url_for('static', filename='js/chat_list.js') }}"></script>
+{% endblock %}

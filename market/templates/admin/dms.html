@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}1:1 채팅 관제{% endblock %}
+{% block content %}
+<h1>1:1 채팅 관제</h1>
+<p class="muted">구매자·판매자 간 1:1 메시지 (최신 300건)</p>
+{% if dms %}
+<table>
+  <tr><th>일시</th><th>보낸 사람</th><th>받는 사람</th><th>내용</th></tr>
+  {% for m in dms %}
+  <tr>
+    <td class="small">{{ m['created_at'] }}</td>
+    <td>{{ m['sender'] }}</td>
+    <td>{{ m['receiver'] }}</td>
+    <td>{{ m['content'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p class="muted">메시지가 없습니다.</p>
+{% endif %}
+{% endblock %}

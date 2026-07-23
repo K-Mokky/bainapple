@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}사용자 관리{% endblock %}
+{% block content %}
+<h1>사용자 관리</h1>
+<form class="inline" method="get" action="{{ url_for('admin.users') }}">
+  <input name="q" value="{{ q }}" placeholder="사용자명 검색" maxlength="20">
+  <button class="btn" type="submit">검색</button>
+</form>
+<table>
+  <tr><th>사용자명</th><th>권한</th><th>상태</th><th>관리</th></tr>
+  {% for u in users %}
+  <tr>
+    <td><a href="{{ url_for('auth.user_profile', user_id=u['id']) }}">{{ u['username'] }}</a></td>
+    <td>{% if u['is_admin'] %}<span class="badge admin">ADMIN</span>{% else %}일반{% endif %}</td>
+    <td>{% if u['status'] == 'dormant' %}<span class="badge dormant">휴면</span>{% else %}활성{% endif %}</td>
+    <td class="row-actions">
+      {% if u['status'] == 'dormant' %}
+        <form class="inline" method="post" action="{{ url_for('admin.restore_user', user_id=u['id']) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="linklike" type="submit">활성화</button>
+        </form>
+      {% else %}
+        <form class="inline" method="post" action="{{ url_for('admin.set_dormant', user_id=u['id']) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="linklike" type="submit">휴면</button>
+        </form>
+      {% endif %}
+      <form class="inline" method="post" action="{{ url_for('admin.delete_user', user_id=u['id']) }}"
+            onsubmit="return confirm('사용자를 삭제하시겠습니까?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="linklike" type="submit" style="color:var(--danger);">삭제</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

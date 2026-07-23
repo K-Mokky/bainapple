@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}바인애플 · 대시보드{% endblock %}
+{% block content %}
+<h1>안녕하세요, {{ current_user['username'] }}님</h1>
+<p>무엇을 하시겠어요?</p>
+<div class="cards">
+  {% if has_endpoint('products.list_products') %}<a class="card" href="{{ url_for('products.list_products') }}">상품 둘러보기</a>{% endif %}
+  {% if has_endpoint('products.new_product') %}<a class="card" href="{{ url_for('products.new_product') }}">상품 등록</a>{% endif %}
+  {% if has_endpoint('products.my_products') %}<a class="card" href="{{ url_for('products.my_products') }}">내 상품 관리</a>{% endif %}
+  {% if has_endpoint('chat.chat_list') %}<a class="card" href="{{ url_for('chat.chat_list') }}">채팅 목록</a>{% endif %}
+  {% if has_endpoint('wallet.wallet') %}<a class="card" href="{{ url_for('wallet.wallet') }}">내 계좌</a>{% endif %}
+  {% if has_endpoint('auth.profile') %}<a class="card" href="{{ url_for('auth.profile') }}">마이페이지</a>{% endif %}
+</div>
+{% endblock %}

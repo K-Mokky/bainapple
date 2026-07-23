@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ peer['username'] }} 님과의 채팅{% endblock %}
+{% block content %}
+<h1>{{ peer['username'] }} 님과의 1:1 채팅</h1>
+<p><a class="small" href="{{ url_for('chat.chat_list') }}">← 채팅 목록</a></p>
+<div class="chatbox">
+  <div id="messages" class="messages">
+    {% for m in history %}
+      <div class="msg {% if m['sender_id'] == me %}mine{% endif %}{% if m['content'].startswith(account_prefix) %} account{% endif %}"
+           {% if m['content'].startswith(account_prefix) %}title="클릭하면 계좌 정보가 복사됩니다"{% endif %}>{{ m['content'] }}</div>
+    {% endfor %}
+  </div>
+  <form id="dm-form" class="chat-input" autocomplete="off"
+        data-me="{{ me }}" data-peer="{{ peer['id'] }}" data-account-prefix="{{ account_prefix }}">
+    <input id="dm-input" maxlength="500" placeholder="메시지를 입력하세요" required style="flex:1;">
+    <button class="btn" type="submit">전송</button>
+    {% if has_account %}
+      <button class="btn secondary" type="button" id="send-account">내 계좌 보내기</button>
+    {% else %}
+      <a class="btn secondary" href="{{ url_for('wallet.wallet') }}">계좌 등록</a>
+    {% endif %}
+  </form>
+</div>
+<p class="muted small">받은 계좌 메시지를 클릭하면 계좌/은행명/예금주가 클립보드에 복사됩니다.
+은행 앱에 붙여넣어 송금하세요.</p>
+{% endblock %}
+{% block scripts %}
+{# socket.io.min.js is loaded by base.html for logged-in users #}
+<script src="{{ url_for('static', filename='js/dm.js') }}"></script>
+{% endblock %}

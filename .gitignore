@@ -1,0 +1,18 @@
+# secrets / local runtime
+.env
+instance/
+market/static/uploads/*
+!market/static/uploads/.gitkeep
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# local sqlite fallback
+*.db
+market.db.import
+
+# agent runtime
+.gjc/

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}알림{% endblock %}
+{% block content %}
+<h1>알림</h1>
+<p class="muted">읽지 않은 알림 {{ notifications|length }}개</p>
+{% if notifications %}
+<form class="inline" method="post" action="{{ url_for('notifications.read_all') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="btn secondary" type="submit">모두 읽음 처리</button>
+</form>
+<div class="notif-list">
+  {% for n in notifications %}
+  <div class="notif-item">
+    <span class="badge {% if n['type'] == 'favorite' %}admin{% else %}notif-dm{% endif %}">
+      {% if n['type'] == 'favorite' %}찜{% else %}채팅{% endif %}
+    </span>
+    <a class="notif-body" href="{{ n['url'] }}">
+      <span class="from">{{ n['username'] }}</span>
+      <span class="content">{{ n['content'] }}</span>
+      <span class="muted small">{{ n['created_at'] }}</span>
+    </a>
+    <form class="inline" method="post"
+          action="{{ url_for('notifications.read_one', notification_id=n['id']) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="linklike small" type="submit">읽음</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted">읽지 않은 알림이 없습니다.</p>
+{% endif %}
+{% endblock %}

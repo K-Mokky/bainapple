@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}상품 관리{% endblock %}
+{% block content %}
+<h1>상품 관리</h1>
+<form class="inline" method="get" action="{{ url_for('admin.products') }}">
+  <input name="q" value="{{ q }}" placeholder="상품명 검색" maxlength="100">
+  <button class="btn" type="submit">검색</button>
+</form>
+<table>
+  <tr><th>상품명</th><th>판매자</th><th>가격</th><th>상태</th><th>관리</th></tr>
+  {% for p in products %}
+  <tr>
+    <td><a href="{{ url_for('products.view_product', product_id=p['id']) }}">{{ p['title'] }}</a></td>
+    <td>{{ p['seller'] }}</td>
+    <td>₩{{ '{:,}'.format(p['price']) }}</td>
+    <td>{% if p['status'] == 'blocked' %}<span class="badge blocked">차단</span>{% else %}판매중{% endif %}</td>
+    <td class="row-actions">
+      {% if p['status'] == 'blocked' %}
+        <form class="inline" method="post" action="{{ url_for('admin.unblock_product', product_id=p['id']) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="linklike" type="submit">차단해제</button>
+        </form>
+      {% else %}
+        <form class="inline" method="post" action="{{ url_for('admin.block_product', product_id=p['id']) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="linklike" type="submit">차단</button>
+        </form>
+      {% endif %}
+      <form class="inline" method="post" action="{{ url_for('admin.delete_product', product_id=p['id']) }}"
+            onsubmit="return confirm('상품을 삭제하시겠습니까?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="linklike" type="submit" style="color:var(--danger);">삭제</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

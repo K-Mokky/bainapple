@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ user['username'] }} 프로필{% endblock %}
+{% block content %}
+<h1>{{ user['username'] }}
+  {% if user['is_admin'] %}<span class="badge admin">ADMIN</span>{% endif %}
+  {% if user['status'] == 'dormant' %}<span class="badge dormant">휴면</span>{% endif %}
+</h1>
+<p class="muted">{{ user['bio'] or '소개글이 없습니다.' }}</p>
+
+<div class="row-actions">
+  {% if current_user and current_user['id'] != user['id'] %}
+    {% if has_endpoint('chat.direct') %}<a class="btn" href="{{ url_for('chat.direct', user_id=user['id']) }}">1:1 채팅</a>{% endif %}
+    {% if has_endpoint('moderation.report') %}<a class="btn danger" href="{{ url_for('moderation.report', target_type='user', target_id=user['id']) }}">신고</a>{% endif %}
+  {% endif %}
+</div>
+
+<h2>판매 중인 상품</h2>
+{% if products %}
+<div class="product-grid">
+  {% for p in products %}
+  <div class="product">
+    <div class="body">
+      <div>{% if has_endpoint('products.view_product') %}<a href="{{ url_for('products.view_product', product_id=p['id']) }}">{{ p['title'] }}</a>{% else %}{{ p['title'] }}{% endif %}</div>
+      <div class="price">₩{{ '{:,}'.format(p['price']) }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted">판매 중인 상품이 없습니다.</p>
+{% endif %}
+{% endblock %}

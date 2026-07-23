@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}사용자 목록{% endblock %}
+{% block content %}
+<h1>사용자</h1>
+<form class="inline" method="get" action="{{ url_for('auth.users') }}">
+  <input name="q" value="{{ q }}" placeholder="사용자명 검색" maxlength="20">
+  <button class="btn" type="submit">검색</button>
+</form>
+<table>
+  <tr><th>사용자명</th><th>소개</th><th>상태</th><th></th></tr>
+  {% for u in users %}
+  <tr>
+    <td><a href="{{ url_for('auth.user_profile', user_id=u['id']) }}">{{ u['username'] }}</a></td>
+    <td class="muted">{{ u['bio'][:60] }}</td>
+    <td>{% if u['status'] == 'dormant' %}<span class="badge dormant">휴면</span>{% else %}활성{% endif %}</td>
+    <td class="row-actions">
+      {% if has_endpoint('chat.direct') %}<a class="small" href="{{ url_for('chat.direct', user_id=u['id']) }}">1:1 채팅</a>{% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

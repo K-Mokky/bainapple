@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}신고 관리{% endblock %}
+{% block content %}
+<h1>신고 관리</h1>
+{% if reports %}
+<table>
+  <tr><th>일시</th><th>신고자</th><th>유형</th><th>대상 ID</th><th>사유</th><th></th></tr>
+  {% for r in reports %}
+  <tr>
+    <td class="small">{{ r['created_at'] }}</td>
+    <td>{{ r['reporter'] }}</td>
+    <td>{{ '사용자' if r['target_type'] == 'user' else '상품' }}</td>
+    <td class="small">{{ r['target_id'] }}</td>
+    <td>{{ r['reason'] }}</td>
+    <td>
+      <form class="inline" method="post" action="{{ url_for('admin.delete_report', report_id=r['id']) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="linklike" type="submit" style="color:var(--danger);">삭제</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p class="muted">신고 내역이 없습니다.</p>
+{% endif %}
+{% endblock %}

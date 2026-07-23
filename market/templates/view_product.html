@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ product['title'] }}{% endblock %}
+{% block content %}
+<article class="product-detail">
+  {% if product['image_path'] %}
+    <img class="detail-img" src="{{ url_for('static', filename='uploads/' ~ product['image_path']) }}"
+         alt="{{ product['title'] }}">
+  {% endif %}
+  <h1>{{ product['title'] }}
+    {% if product['status'] == 'blocked' %}<span class="badge blocked">차단됨</span>{% endif %}
+    {% if product['sale_status'] == 'sold' %}<span class="badge dormant">판매완료</span>{% else %}<span class="badge admin">판매중</span>{% endif %}
+  </h1>
+  <p class="price" style="font-size:1.3rem;">₩{{ '{:,}'.format(product['price']) }}</p>
+  <p class="muted">{{ product['category'] }} · {{ product['created_at']|timeago }} · 찜 {{ fav_count }}개</p>
+  <p>판매자:
+    <a href="{{ url_for('auth.user_profile', user_id=seller['id']) }}">{{ seller['username'] }}</a>
+  </p>
+  <div class="desc">{{ product['description'] }}</div>
+
+  <div class="row-actions" style="margin-top:1rem;">
+    {% if current_user and (current_user['id'] == product['seller_id'] or current_user['is_admin']) %}
+      <a class="btn secondary" href="{{ url_for('products.edit_product', product_id=product['id']) }}">수정</a>
+      <form class="inline" method="post"
+            action="{{ url_for('products.toggle_sale_status', product_id=product['id']) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn secondary" type="submit">
+          {% if product['sale_status'] == 'selling' %}판매완료로 변경{% else %}판매중으로 변경{% endif %}
+        </button>
+      </form>
+      <form class="inline" method="post"
+            action="{{ url_for('products.delete_product', product_id=product['id']) }}"
+            onsubmit="return confirm('정말 삭제하시겠습니까?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn danger" type="submit">삭제</button>
+      </form>
+    {% endif %}
+    {% if current_user and current_user['id'] != product['seller_id'] %}
+      <form class="inline" method="post"
+            action="{{ url_for('products.toggle_favorite', product_id=product['id']) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn secondary" type="submit">{% if faved %}찜 해제{% else %}찜하기{% endif %}</button>
+      </form>
+      {% if has_endpoint('moderation.report') %}
+        <a class="btn danger" href="{{ url_for('moderation.report', target_type='product', target_id=product['id']) }}">신고</a>
+      {% endif %}
+      {% if has_endpoint('chat.direct') %}
+        <a class="btn" href="{{ url_for('chat.direct', user_id=seller['id']) }}">판매자와 1:1 채팅</a>
+      {% endif %}
+    {% endif %}
+  </div>
+</article>
+{% endblock %}

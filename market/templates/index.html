@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}바인애플 · 시작{% endblock %}
+{% block content %}
+<section class="hero">
+  <img class="hero-icon" src="{{ url_for('static', filename='img/vineapple.png') }}" alt="바인애플 아이콘">
+  <h1>중고거래 플랫폼, <strong style="font-size: 1.2em; color: #2563eb;">바인애플</strong></h1>
+  <p>안전하게 물건을 사고 팔고, 이웃과 대화하고, 송금하세요.</p>
+  <div class="cta">
+    {% if has_endpoint('auth.register') %}<a class="btn" href="{{ url_for('auth.register') }}">회원가입</a>{% endif %}
+    {% if has_endpoint('auth.login') %}<a class="btn secondary" href="{{ url_for('auth.login') }}">로그인</a>{% endif %}
+  </div>
+</section>
+{% endblock %}

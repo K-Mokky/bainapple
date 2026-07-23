@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}신고하기{% endblock %}
+{% block content %}
+<h1>신고하기</h1>
+<form class="stack" method="post" action="{{ url_for('moderation.report') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="target_type">신고 유형</label>
+  <select id="target_type" name="target_type" required>
+    <option value="user" {% if target_type == 'user' %}selected{% endif %}>사용자</option>
+    <option value="product" {% if target_type == 'product' %}selected{% endif %}>상품</option>
+  </select>
+  <label for="target_id">대상 ID</label>
+  <input id="target_id" name="target_id" required value="{{ target_id }}">
+  <label for="reason">신고 사유 (1~500자)</label>
+  <textarea id="reason" name="reason" required maxlength="500"></textarea>
+  <button class="btn danger" type="submit">신고</button>
+</form>
+{% endblock %}

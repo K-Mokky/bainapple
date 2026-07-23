@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}중고거래{% endblock %}
+{% block content %}
+<div class="topbar" style="border:0;padding:0;background:none;">
+  <h1>중고거래</h1>
+  <form class="inline" method="get" action="{{ url_for('products.list_products') }}">
+    {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+    {% if selling_only %}<input type="hidden" name="selling" value="1">{% endif %}
+    <input name="q" value="{{ q }}" placeholder="상품명 검색 (2자 이상)" minlength="2" maxlength="100">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <button class="btn" type="submit">검색</button>
+  </form>
+</div>
+
+<div class="browse">
+  <aside class="filter-panel">
+    <div class="filter-head">
+      <h2>필터</h2>
+      <a class="small" href="{{ url_for('products.list_products') }}">초기화</a>
+    </div>
+    <form id="filter-form" method="get" action="{{ url_for('products.list_products') }}">
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      <section class="filter-group">
+        <h3>정렬</h3>
+        <label class="filter-option">
+          <input type="radio" name="sort" value="latest" {% if sort == 'latest' %}checked{% endif %}>
+          최신순
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="sort" value="price_asc" {% if sort == 'price_asc' %}checked{% endif %}>
+          가격 낮은 순
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="sort" value="price_desc" {% if sort == 'price_desc' %}checked{% endif %}>
+          가격 높은 순
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="sort" value="likes" {% if sort == 'likes' %}checked{% endif %}>
+          찜 많은 순
+        </label>
+      </section>
+      <section class="filter-group">
+        <h3>상태</h3>
+        <label class="filter-option">
+          <input type="checkbox" name="selling" value="1" {% if selling_only %}checked{% endif %}>
+          판매중만 보기
+        </label>
+      </section>
+      <section class="filter-group">
+        <h3>카테고리</h3>
+        <label class="filter-option">
+          <input type="radio" name="category" value="" {% if not category %}checked{% endif %}>
+          전체
+        </label>
+        {% for c in categories %}
+        <label class="filter-option">
+          <input type="radio" name="category" value="{{ c }}" {% if category == c %}checked{% endif %}>
+          {{ c }}
+        </label>
+        {% endfor %}
+      </section>
+      <noscript><button class="btn secondary" type="submit">적용</button></noscript>
+    </form>
+  </aside>
+
+  <section class="browse-results">
+    {% if q %}<p class="muted">"{{ q }}" 검색 결과 {{ products|length }}건</p>{% endif %}
+    {% if products %}
+    <div class="product-grid">
+      {% for p in products %}
+      <a class="product card-link" href="{{ url_for('products.view_product', product_id=p['id']) }}">
+        {% if p['image_path'] %}
+        <img src="{{ url_for('static', filename='uploads/' ~ p['image_path']) }}" alt="{{ p['title'] }}">
+        {% else %}
+        <div class="thumb-placeholder">이미지 없음</div>
+        {% endif %}
+        <div class="body">
+          <div class="p-title">{{ p['title'] }}
+            {% if p['sale_status'] == 'sold' %}<span class="badge dormant">판매완료</span>{% endif %}
+          </div>
+          <div class="price">₩{{ '{:,}'.format(p['price']) }}</div>
+          <div class="muted small">
+            {{ p['category'] }} · {{ p['created_at']|timeago }}{% if p['fav_count'] %} · 찜 {{ p['fav_count'] }}{% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">조건에 맞는 상품이 없습니다.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+{% endblock %}

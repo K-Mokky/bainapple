@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}내 계좌{% endblock %}
+{% block content %}
+<h1>내 계좌</h1>
+<p class="muted">
+  계좌는 1개만 저장됩니다. 1:1 채팅의 "내 계좌 보내기" 버튼으로 구매자에게 전달되고,
+  받은 사람은 메시지를 눌러 계좌/은행명/예금주를 클립보드에 복사할 수 있습니다.
+</p>
+
+{% if account['account_number'] %}
+<p>
+  저장된 계좌: <strong>{{ account['bank_name'] }} {{ account['account_number'] }}
+  ({{ account['account_holder'] }})</strong>
+</p>
+{% else %}
+<p class="muted">아직 저장된 계좌가 없습니다.</p>
+{% endif %}
+
+<h2>계좌 등록 / 변경</h2>
+<form class="stack" method="post" action="{{ url_for('wallet.save_account') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="bank_name">은행명</label>
+  <input id="bank_name" name="bank_name" required maxlength="30"
+         value="{{ account['bank_name'] }}">
+  <label for="account_number">계좌번호 (숫자·하이픈)</label>
+  <input id="account_number" name="account_number" required maxlength="30"
+         pattern="[0-9][0-9-]{2,28}[0-9]" value="{{ account['account_number'] }}">
+  <label for="account_holder">예금주</label>
+  <input id="account_holder" name="account_holder" required maxlength="30"
+         value="{{ account['account_holder'] }}">
+  <button class="btn" type="submit">저장</button>
+</form>
+{% endblock %}
